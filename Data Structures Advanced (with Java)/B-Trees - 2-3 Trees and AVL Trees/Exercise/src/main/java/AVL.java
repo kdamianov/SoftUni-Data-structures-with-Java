@@ -26,15 +26,19 @@ public class AVL<T extends Comparable<T>> {
     }
 
     public void delete(T item) {
-        throw new UnsupportedOperationException();
+        this.root = this.delete(this.root, item);
     }
 
     public void deleteMin() {
-        throw new UnsupportedOperationException();
+        this.root = this.deleteMin(this.root);
     }
 
+
     public void deleteMax() {
-        throw new UnsupportedOperationException();
+        if (this.root == null) {
+            throw new IllegalArgumentException();
+        }
+        this.root = this.deleteMax(this.root);
     }
 
     private void eachInOrder(Node<T> node, Consumer<T> action) {
@@ -64,6 +68,35 @@ public class AVL<T extends Comparable<T>> {
         return balance(node);
     }
 
+    private Node<T> delete(Node<T> node, T item) {
+        if (node == null) {
+            return null;
+        }
+
+        int cmp = item.compareTo(node.value);
+
+        if (cmp < 0) {
+            node.left = this.delete(node.left, item);
+        } else if (cmp > 0) {
+            node.right = this.delete(node.right, item);
+        } else {
+            if (node.left == null) {
+                return node.right;
+            } else if (node.right == null) {
+                return node.left;
+            } else {
+                Node<T> minNode = this.getMin(node.right);
+                minNode.right = this.deleteMin(node.right);
+                minNode.left = node.left;
+                node = minNode;
+            }
+
+
+        }
+        this.updateHeight(node);
+        return balance(node);
+    }
+
     private Node<T> getMin(Node<T> node) {
         if (node == null) {
             return null;
@@ -74,6 +107,32 @@ public class AVL<T extends Comparable<T>> {
         }
 
         return getMin(node.left);
+    }
+
+    private Node<T> deleteMin(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+
+        if (node.left == null) {
+            return node.right;
+        }
+
+        node.left = this.deleteMin(node.left);
+        node = this.balance(node);
+        this.updateHeight(node);
+        return node;
+    }
+
+    private Node<T> deleteMax(Node<T> node) {
+        if (node == null) {
+            return null;
+        }
+        if (node.right == null) {
+            return node.left;
+        }
+        node.right = this.deleteMax(node.right);
+        return node;
     }
 
     private Node<T> rotateLeft(Node<T> node) {
